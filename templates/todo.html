@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>進化版Todoアプリ</title>
+</head>
+<body>
+    <h1>進化版Todoアプリ（保存・削除機能付き）</h1>
+
+    <form action="/" method="POST">
+        <input type="text" name="task_content" placeholder="新しいタスクを入力" required>
+        <button type="submit">追加</button>
+    </form>
+
+    <h2>現在のタスク一覧</h2>
+    <ul>
+        {% for task in tasks %}
+            <li>
+                {{ task }}
+                <form action="/delete/{{ loop.index0 }}" method="POST" style="display:inline;">
+                    <button type="submit">削除</button>
+                </form>
+            </li>
+        {% else %}
+            <li>タスクはありません。</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
