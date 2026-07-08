@@ -5,7 +5,7 @@
     <title>進化版Todoアプリ</title>
 </head>
 <body>
-    <h1>進化版Todoアプリ（保存・削除機能付き）</h1>
+    <h1>進化版Todoアプリ（CRUD完成版）</h1>
 
     <form action="/" method="POST">
         <input type="text" name="task_content" placeholder="新しいタスクを入力" required>
@@ -17,6 +17,8 @@
         {% for task in tasks %}
             <li>
                 {{ task }}
+                <a href="/edit/{{ loop.index0 }}" style="margin-right: 10px;">[編集]</a>
+
                 <form action="/delete/{{ loop.index0 }}" method="POST" style="display:inline;">
                     <button type="submit">削除</button>
                 </form>

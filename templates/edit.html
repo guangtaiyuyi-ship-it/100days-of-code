@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>タスクの編集</title>
+</head>
+<body>
+    <h1>タスクの編集</h1>
+
+    <form action="/edit/{{ task_id }}" method="POST">
+        <input type="text" name="updated_content" value="{{ current_task }}" required>
+        <button type="submit">保存</button>
+    </form>
+
+    <br>
+    <a href="/">キャンセルして戻る</a>
+</body>
+</html>
