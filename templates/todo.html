@@ -12,14 +12,15 @@
         <button type="submit">追加</button>
     </form>
 
-    <h2>現在のタスク一覧</h2>
+    <h2>タスク一覧</h2>
     <ul>
         {% for task in tasks %}
             <li>
-                {{ task }}
-                <a href="/edit/{{ loop.index0 }}" style="margin-right: 10px;">[編集]</a>
+                {{ task[1] }}
+                
+                <a href="/edit/{{ task[0] }}" style="margin-left: 10px; margin-right: 10px;">[編集する]</a>
 
-                <form action="/delete/{{ loop.index0 }}" method="POST" style="display:inline;">
+                <form action="/delete/{{ task[0] }}" method="POST" style="display:inline;">
                     <button type="submit">削除</button>
                 </form>
             </li>
