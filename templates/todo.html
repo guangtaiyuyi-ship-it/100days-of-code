@@ -2,10 +2,10 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>進化版Todoアプリ</title>
+    <title>Todoアプリ (ORM版)</title>
 </head>
 <body>
-    <h1>進化版Todoアプリ（CRUD完成版）</h1>
+    <h1>Todoアプリ (ORM版)</h1>
 
     <form action="/" method="POST">
         <input type="text" name="task_content" placeholder="新しいタスクを入力" required>
@@ -16,11 +16,11 @@
     <ul>
         {% for task in tasks %}
             <li>
-                {{ task[1] }}
+                {{ task.content }}
                 
-                <a href="/edit/{{ task[0] }}" style="margin-left: 10px; margin-right: 10px;">[編集する]</a>
+                <a href="/edit/{{ task.id }}" style="margin-left: 10px; margin-right: 10px;">[編集する]</a>
 
-                <form action="/delete/{{ task[0] }}" method="POST" style="display:inline;">
+                <form action="/delete/{{ task.id }}" method="POST" style="display:inline;">
                     <button type="submit">削除</button>
                 </form>
             </li>
