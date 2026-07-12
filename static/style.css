@@ -85,3 +85,20 @@ li {
     border-radius: 4px;
     cursor: pointer;
 }
+
+/* 【解説】完了したタスクの文字に打ち消し線を引き、色を薄くする */
+.completed {
+    text-decoration: line-through;
+    color: #95a5a6;
+}
+
+/* 【解説】完了ボタン（緑色っぽい青）のデザイン */
+.btn-toggle {
+    background-color: #16a085;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 10px;
+}

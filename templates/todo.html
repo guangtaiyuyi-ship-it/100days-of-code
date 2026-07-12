@@ -15,16 +15,24 @@
         </form>
 
         <ul>
-            {% for task in tasks %}
-                <li>
-                    <span class="task-text">{{ task.content }}</span>
-                    
-                    <a href="/edit/{{ task.id }}" class="btn-edit">編集</a>
+        {% for task in tasks %}
+            <li>
+                <span class="task-text {% if task.is_completed %}completed{% endif %}">
+                    {{ task.content }}
+                </span>
+                
+                <form action="/toggle/{{ task.id }}" method="POST" style="display:inline;">
+                    <button type="submit" class="btn-toggle">
+                        {% if task.is_completed %}戻す{% else %}完了{% endif %}
+                    </button>
+                </form>
 
-                    <form action="/delete/{{ task.id }}" method="POST" style="display:inline;">
-                        <button type="submit" class="btn-delete">削除</button>
-                    </form>
-                </li>
+                <a href="/edit/{{ task.id }}" class="btn-edit">編集</a>
+
+                <form action="/delete/{{ task.id }}" method="POST" style="display:inline;">
+                    <button type="submit" class="btn-delete">削除</button>
+                </form>
+            </li>
             {% else %}
                 <li style="color: #95a5a6;">タスクはありません。</li>
             {% endfor %}
