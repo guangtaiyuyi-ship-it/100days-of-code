@@ -37,6 +37,14 @@
                 <li style="color: #95a5a6;">タスクはありません。</li>
             {% endfor %}
         </ul>
-    </div>
+        <div style="margin-top: 20px; text-align: right;">
+            <form action="/delete_completed" method="POST">
+                <button type="submit" class="btn-clear" 
+                        {% if tasks|selectattr('is_completed', 'equalto', true)|list|length == 0 %}disabled{% endif %}>
+                    完了済みタスクを全て削除
+                </button>
+            </form>
+        </div>
+    </div> ```
 </body>
 </html>

@@ -102,3 +102,27 @@ li {
     cursor: pointer;
     margin-right: 10px;
 }
+
+/* 【解説】一括削除ボタンの基本デザイン */
+.btn-clear {
+    background-color: #bdc3c7;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+/* 【解説】マウスを乗せた時の色（警告を促すオレンジ） */
+.btn-clear:hover {
+    background-color: #e67e22;
+}
+
+/* 【解説】ボタンが無効化（disabled）されている時の薄いデザイン */
+.btn-clear:disabled {
+    background-color: #ecf0f1;
+    color: #95a5a6;
+    cursor: not-allowed;
+}

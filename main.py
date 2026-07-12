@@ -45,6 +45,21 @@ def toggle_task(task_id):
     db.session.commit()  # データベースに変更を保存
     return redirect(url_for("todo_app"))
 
+# ==================== 【新規追加】完了済みタスクの一括削除処理 ====================
+@app.route("/delete_completed", methods=["POST"])
+def delete_completed_tasks():
+    # 1. 【解説】データベースから「is_completed が True（完了）」のデータだけを絞り込んで取得
+    completed_tasks = TodoTask.query.filter_by(is_completed=True).all()
+
+    # 2. 【解説】該当するタスクをループ処理で1つずつ削除リストに追加
+    for task in completed_tasks:
+        db.session.delete(task)
+
+    # 3. 変更を確定（ここで一括してデータベースから消去されます）
+    db.session.commit()
+
+    # 4. トップページへ戻る
+    return redirect(url_for("todo_app"))
 
 @app.route("/delete/<int:task_id>", methods=["POST"])
 def delete_task(task_id):
