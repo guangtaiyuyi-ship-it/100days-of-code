@@ -3,16 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <title>タスクの編集</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>タスクの編集</h1>
+    <div class="container">
+        <h1>タスクの編集</h1>
 
-    <form action="/edit/{{ task_id }}" method="POST">
-        <input type="text" name="updated_content" value="{{ current_task }}" required>
-        <button type="submit">保存</button>
-    </form>
+        <form action="/edit/{{ task_id }}" method="POST" class="input-form" style="flex-direction: column; gap: 15px;">
+            
+            <input type="text" name="updated_content" value="{{ current_task }}" required>
+            
+            <button type="submit" class="btn-add" style="width: 100%;">変更を保存</button>
+        </form>
 
-    <br>
-    <a href="/">キャンセルして戻る</a>
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="/" style="color: #95a5a6; text-decoration: none; font-size: 14px; font-weight: bold;">
+                キャンセルして戻る
+            </a>
+        </div>
+    </div>
 </body>
 </html>
