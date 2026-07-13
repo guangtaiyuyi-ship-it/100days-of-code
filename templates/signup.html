@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>新規ユーザー登録</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>新規ユーザー登録</h1>
+        <form action="/signup" method="POST" class="input-form" style="flex-direction: column;">
+            <input type="text" name="username" placeholder="希望するユーザー名" required style="margin-bottom: 10px;">
+            <input type="password" name="password" placeholder="パスワード" required style="margin-bottom: 15px; padding: 10px; border: 1px solid #cfd8dc; border-radius: 6px; font-size: 16px;">
+            <button type="submit" class="btn-add" style="width: 100%; background-color: #2ecc71;">登録する</button>
+        </form>
+        <p style="text-align: center; margin-top: 15px; font-size: 14px;">
+            登録済みの方は <a href="/login" style="color: #3498db; text-decoration: none; font-weight: bold;">ログインへ</a>
+        </p>
+    </div>
+</body>
+</html>
