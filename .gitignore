@@ -23,7 +23,3 @@ __pycache__/
 # WindowsやMacが自動生成するフォルダの見た目設定ファイルを除外
 .DS_Store
 Thumbs.db
-
-# 過去に作成した不要なHTMLファイルの除外
-form.html
-index.html

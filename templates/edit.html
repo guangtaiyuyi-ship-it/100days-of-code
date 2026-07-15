@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>書籍編集</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>書籍編集</h1>
+        <form action="/edit/{{ book_id }}" method="POST" class="input-form" style="flex-direction: column;">
+            <input type="text" name="updated_title" value="{{ current_book }}" required style="margin-bottom: 10px;">
+            <button type="submit" class="btn-add" style="width: 100%;">書籍を更新</button>
+        </form>
+    </div>
+</body>
+</html>

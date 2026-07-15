@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>書籍リスト</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>書籍リスト</h1>
+        <form action="/add_book" method="POST" class="input-form" style="flex-direction: column;">
+            <input type="text" name="book_title" placeholder="書籍名" required style="margin-bottom: 10px;">
+            <button type="submit" class="btn-add" style="width: 100%;">書籍を追加</button>
+        </form>
+    </div>
+</body>
+</html>
