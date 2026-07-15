@@ -9,9 +9,12 @@
     <div class="container">
         <h1>書籍編集</h1>
         <form action="/edit/{{ book_id }}" method="POST" class="input-form" style="flex-direction: column;">
-            <input type="text" name="updated_title" value="{{ current_book }}" required style="margin-bottom: 10px;">
+            <input type="text" name="updated_title" value="{{ current_book }}" required>
+            <input type="text" name="updated_author" value="{{ current_author }}" required>
             <button type="submit" class="btn-add" style="width: 100%;">書籍を更新</button>
         </form>
+    <div style="text-align: center; margin-top: 20px;">
+        <a href="/" style="color: #3498db; text-decoration: none; font-size: 14px; font-weight: bold;">書籍リストに戻る</a>
     </div>
 </body>
 </html>

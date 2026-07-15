@@ -6,12 +6,47 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div class="container">
-        <h1>書籍リスト</h1>
-        <form action="/add_book" method="POST" class="input-form" style="flex-direction: column;">
-            <input type="text" name="book_title" placeholder="書籍名" required style="margin-bottom: 10px;">
-            <button type="submit" class="btn-add" style="width: 100%;">書籍を追加</button>
-        </form>
+<div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <span style="font-weight: bold; color: #7f8c8d;">こんにちは、{{ username }} さん</span>
+        <a href="/logout" style="color: #e74c3c; text-decoration: none; font-size: 14px; font-weight: bold;">[ログアウト]</a>
     </div>
+    <h1>書籍リスト</h1>
+    <form action="/" method="POST" class="input-form">
+        <input type="text" name="book_title" placeholder="書籍名">
+        <input type="text" name="author" placeholder="著者名">
+        <button type="submit" class="btn-add">書籍を追加</button>
+    </form>
+    <ul>
+        {% for book in books %}
+            <li>
+                <span class="book-title">{{ book.title }}</span>
+                <span class="book-author">著者: {{ book.author }}</span> 
+                <span class="book-status {% if book.is_completed %}completed{% endif %}">{{ book.is_completed }}</span>
+                <div class="book-actions">
+                <form action="/toggle/{{ book.id }}" method="POST" style="display:inline;">
+                    <button type="submit" class="btn-toggle">
+                        {% if book.is_completed %}戻す{% else %}完了{% endif %}
+                    </button>
+                </form>
+                    <a href="/edit/{{ book.id }}" class="btn-edit">編集</a>
+                    <form action="/delete/{{ book.id }}" method="POST" style="display: inline;">
+                        <button type="submit" class="btn-delete">削除</button>
+                    </form> 
+                </div>
+            </li>
+            {% else %}
+                <li style="color: #95a5a6;">書籍がありません。</li>
+        {% endfor %}
+    </ul>
+    <div style="margin-top: 20px; text-align: right;">
+            <form action="/delete_completed" method="POST">
+                <button type="submit" class="btn-clear" 
+                        {% if books|selectattr('is_completed', 'equalto', true)|list|length == 0 %}disabled{% endif %}>
+                    完了済み書籍を全て削除
+                </button>
+            </form>
+        </div>
+    </div> ```
 </body>
 </html>

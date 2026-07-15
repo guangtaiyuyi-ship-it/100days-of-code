@@ -18,10 +18,10 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
     password_hash = db.Column(db.String(200), nullable=False)
-    books = db.relationship("books", backref="owner", lazy=True)
+    books = db.relationship("Book", backref="owner", lazy=True)
 
 # 2. 書籍情報を保存するテーブル
-class books(db.Model):
+class Book(db.Model):
     __tablename__ = "books"
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
@@ -92,15 +92,16 @@ def list_app():
 
     if request.method == "POST":
         book_title = request.form.get("book_title")
-        if book_title:
+        author = request.form.get("author")
+        if book_title and author:
             # 現在ログインしている人のID（session['user_id']）を紐付けてタスクを保存
-            new_book = books(title=book_title, user_id=session["user_id"])
+            new_book = Book(title=book_title, author=author, user_id=session["user_id"])
             db.session.add(new_book)
             db.session.commit()
         return redirect(url_for("list_app"))
 
     # 【重要】すべての書籍リストではなく、「現在ログイン中のユーザーの書籍」だけを絞り込んで取得
-    book_data = books.query.filter_by(user_id=session["user_id"]).all()
+    book_data = Book.query.filter_by(user_id=session["user_id"]).all()
     return render_template("books.html", books=book_data, username=session["username"])
 
 
@@ -109,7 +110,7 @@ def list_app():
 def toggle_books(book_id):
     if "user_id" not in session:
         return redirect(url_for("login"))
-    book = books.query.get_or_404(book_id)
+    book = Book.query.get_or_404(book_id)
     # 他人のリストを操作できないようにガードをかける（セキュリティ対策）
     if book.user_id != session["user_id"]:
         return "権限がありません", 403
@@ -123,7 +124,7 @@ def toggle_books(book_id):
 def delete_book(book_id):
     if "user_id" not in session:
         return redirect(url_for("login"))
-    book = books.query.get_or_404(book_id)
+    book = Book.query.get_or_404(book_id)
     if book.user_id != session["user_id"]:
         return "権限がありません", 403
 
@@ -137,7 +138,7 @@ def delete_completed_books():
     if "user_id" not in session:
         return redirect(url_for("login"))
     # 自分の書籍、かつ読了済みのものだけを一括抽出
-    completed_books = books.query.filter_by(
+    completed_books = Book.query.filter_by(
         user_id=session["user_id"], is_completed=True
     ).all()
     for book in completed_books:
@@ -150,17 +151,20 @@ def delete_completed_books():
 def edit_books(book_id):
     if "user_id" not in session:
         return redirect(url_for("login"))
-    book = books.query.get_or_404(book_id)
+    book = Book.query.get_or_404(book_id)
     if book.user_id != session["user_id"]:
         return "権限がありません", 403
 
     if request.method == "POST":
         new_title = request.form.get("updated_title")
+        new_author = request.form.get("updated_author")
         if new_title:
             book.title = new_title
-            db.session.commit()
+        if new_author:
+            book.author = new_author
+        db.session.commit()
         return redirect(url_for("list_app"))
-    return render_template("edit.html", current_book=book.title, book_id=book_id)
+    return render_template("edit.html", current_book=book.title, current_author=book.author, book_id=book_id)
 
 if __name__ == "__main__":
     with app.app_context():
