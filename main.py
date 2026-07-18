@@ -83,20 +83,26 @@ def logout():
 # メイン画面
 @app.route("/", methods=["GET", "POST"])
 def list_app():
+    #すべての書籍リストではなく、「現在ログイン中のユーザーの書籍」だけを絞り込んで取得
+    book_data = Book.query.filter_by(user_id=session["user_id"]).all()
+    return render_template("books.html", books=book_data, username=session["username"])
+
+# 書籍追加ページを表示・処理するルート
+@app.route("/add", methods=["GET", "POST"])
+def add_book():
     if "user_id" not in session:
         return redirect(url_for("login"))
     if request.method == "POST":
-        book_title = request.form.get("book_title")
+        title = request.form.get("book_title")
         author = request.form.get("author")
-        if book_title and author:
-            # 現在ログインしている人のID（session['user_id']）を紐付けてタスクを保存
-            new_book = Book(title=book_title, author=author, user_id=session["user_id"])
+        if title and author:
+            new_book = Book(title=title, author=author, user_id=session["user_id"])
             db.session.add(new_book)
             db.session.commit()
-        return redirect(url_for("list_app"))
-    # 【重要】すべての書籍リストではなく、「現在ログイン中のユーザーの書籍」だけを絞り込んで取得
-    book_data = Book.query.filter_by(user_id=session["user_id"]).all()
-    return render_template("books.html", books=book_data, username=session["username"])
+            return redirect(url_for("list_app"))
+        else:
+            return "書籍名と著者名の両方を入力してください", 400
+    return render_template("add_book.html")
 
 # 一括削除・単体削除・編集の処理（すべての関数でログインチェックが必要です）
 @app.route("/toggle/<int:book_id>", methods=["POST"])

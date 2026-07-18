@@ -12,11 +12,9 @@
         <a href="{{ url_for('logout') }}" style="color: #e74c3c; text-decoration: none; font-size: 14px; font-weight: bold;">[ログアウト]</a>
     </div>
     <h1>書籍リスト</h1>
-    <form action="{{ url_for('list_app') }}" method="POST" class="input-form">
-        <input type="text" name="book_title" placeholder="書籍名">
-        <input type="text" name="author" placeholder="著者名">
-        <button type="submit" class="btn-add">書籍を追加</button>
-    </form>
+    <div style="margin-bottom: 20px;">
+        <a href="{{ url_for('add_book') }}" class="btn-add" style="width: 100%; padding: 10px;">新しい書籍を追加</a>
+    </div>
     <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
         <thead>
             <tr>
