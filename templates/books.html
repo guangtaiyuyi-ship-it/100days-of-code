@@ -13,7 +13,14 @@
     </div>
     <h1>書籍リスト</h1>
     <div style="margin-bottom: 20px;">
-        <a href="{{ url_for('add_book') }}" class="btn-add" style="width: 100%; padding: 10px;">新しい書籍を追加</a>
+        <a href="{{ url_for('add_book') }}" class="btn-add" style="width: 100%; padding: 10px; margin-bottom: 30px; font-size: 14px; font-weight: bold;">新しい書籍を追加</a>
+        <form action="{{ url_for('list_app') }}" method="GET" style="margin-bottom: 20px; display: flex; gap: 10px;">
+            <input type="text" name="keyword" value="{{ keyword }}" placeholder="タイトルや著者名で検索..." style="flex: 1; padding: 8px; border: 1px solid #cfd8dc; border-radius: 4px; font-size: 14px; font-weight: bold; margin-top: 30px">
+            <button type="submit" style="padding: 8px 16px; background-color: #3498db; color: white; border: none; border-radius: 4px; font-size: 14px; font-weight: bold;  margin-top: 30px;cursor: pointer;">検索</button>
+            {% if keyword %}
+                <a href="{{ url_for('list_app') }}" style="padding: 8px 12px; background-color: #95a5a6; color: white; text-decoration: none; border-radius: 4px; display: flex; align-items: center;">クリア</a>
+            {% endif %}
+        </form>
     </div>
     <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
         <thead>

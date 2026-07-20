@@ -83,8 +83,16 @@ def logout():
 # メイン画面
 @app.route("/", methods=["GET", "POST"])
 def list_app():
-    #すべての書籍リストではなく、「現在ログイン中のユーザーの書籍」だけを絞り込んで取得
-    book_data = Book.query.filter_by(user_id=session["user_id"]).all()
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    
+    keyword = request.args.get("keyword","")
+
+    if keyword:
+        search_query = f"%{keyword}%"
+        book_data = Book.query.filter(Book.user_id == session["user_id"], (Book.title.like(search_query) | Book.author.like(search_query))).all()
+    else:
+        book_data = Book.query.filter_by(user_id=session["user_id"]).all()
     return render_template("books.html", books=book_data, username=session["username"])
 
 # 書籍追加ページを表示・処理するルート
