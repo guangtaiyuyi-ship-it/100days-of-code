@@ -1,6 +1,7 @@
 from flask import Flask, redirect, render_template, request, session, url_for
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash, generate_password_hash
+from functools import wraps
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///todo.db"
@@ -74,18 +75,25 @@ def login():
         return "ユーザー名またはパスワードが間違っています", 401
     return render_template("login.html")
 
-
 # ログアウト処理
 @app.route("/logout")
 def logout():
     session.clear()  # セッションの記憶をすべて消去してログアウト状態にする
     return redirect(url_for("login"))
+
+# ログイン必須のチェックを行うカスタムデコレータ
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if "user_id" not in session:
+            return redirect(url_for("login"))
+        return f(*args, **kwargs)
+    return decorated_function
+
 # メイン画面
 @app.route("/", methods=["GET", "POST"])
+@login_required
 def list_app():
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-    
     keyword = request.args.get("keyword","")
 
     if keyword:
@@ -97,9 +105,8 @@ def list_app():
 
 # 書籍追加ページを表示・処理するルート
 @app.route("/add", methods=["GET", "POST"])
+@login_required
 def add_book():
-    if "user_id" not in session:
-        return redirect(url_for("login"))
     if request.method == "POST":
         title = request.form.get("book_title")
         author = request.form.get("author")
@@ -114,9 +121,8 @@ def add_book():
 
 # 一括削除・単体削除・編集の処理（すべての関数でログインチェックが必要です）
 @app.route("/toggle/<int:book_id>", methods=["POST"])
+@login_required
 def toggle_books(book_id):
-    if "user_id" not in session:
-        return redirect(url_for("login"))
     book = Book.query.get_or_404(book_id)
     # 他人のリストを操作できないようにガードをかける（セキュリティ対策）
     if book.user_id != session["user_id"]:
@@ -128,9 +134,8 @@ def toggle_books(book_id):
 
 
 @app.route("/delete/<int:book_id>", methods=["POST"])
+@login_required
 def delete_book(book_id):
-    if "user_id" not in session:
-        return redirect(url_for("login"))
     book = Book.query.get_or_404(book_id)
     if book.user_id != session["user_id"]:
         return "権限がありません", 403
@@ -141,9 +146,8 @@ def delete_book(book_id):
 
 
 @app.route("/delete_completed", methods=["POST"])
+@login_required
 def delete_completed_books():
-    if "user_id" not in session:
-        return redirect(url_for("login"))
     # 自分の書籍、かつ読了済みのものだけを一括抽出
     completed_books = Book.query.filter_by(
         user_id=session["user_id"], is_completed=True
@@ -155,9 +159,8 @@ def delete_completed_books():
 
 
 @app.route("/edit/<int:book_id>", methods=["GET", "POST"])
+@login_required
 def edit_books(book_id):
-    if "user_id" not in session:
-        return redirect(url_for("login"))
     book = Book.query.get_or_404(book_id)
     if book.user_id != session["user_id"]:
         return "権限がありません", 403

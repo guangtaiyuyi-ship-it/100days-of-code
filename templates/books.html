@@ -1,12 +1,8 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>書籍リスト</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-<div class="container">
+{% extends "base.html" %}
+
+{% block title %}書籍リスト{% endblock %}
+
+{% block content %}
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <span style="font-weight: bold; color: #7f8c8d;">こんにちは、{{ username }} さん</span>
         <a href="{{ url_for('logout') }}" style="color: #e74c3c; text-decoration: none; font-size: 14px; font-weight: bold;">[ログアウト]</a>
@@ -69,6 +65,4 @@
                 </button>
             </form>
         </div>
-    </div> ```
-</body>
-</html>
+{% endblock %}

@@ -1,12 +1,8 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>書籍の追加</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <div class="container">
+{% extends "base.html" %}
+
+{% block title %}書籍の追加{% endblock %}
+
+{% block content %}
         <h1>新しい書籍を追加</h1>
         <form action="{{ url_for('add_book') }}" method="POST" class="input-form" style="flex-direction: column;">
             <input type="text" name="book_title" placeholder="書籍名" required style="margin-bottom: 10px;">
@@ -16,6 +12,4 @@
         <div style="text-align: center; margin-top: 15px;">
             <a href="{{ url_for('list_app') }}" style="color: #95a5a6;">一覧に戻る</a>
         </div>
-    </div>
-</body>
-</html>
+{% endblock %}
