@@ -1,44 +1,34 @@
 from flask import Flask, redirect, render_template, request, session, url_for
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash, generate_password_hash
+from functools import wraps
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///todo.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# 【重要】セッション（ログイン情報の暗号化鍵）の偽造を防ぐための秘密のパスワード
-# 本番では推測されにくい長いランダムな文字列にします
 app.secret_key = "super-secret-key-abcde"
 
 db = SQLAlchemy(app)
 
-
 # ==================== データベースの定義 ====================
-
 
 # 1. ユーザー情報を保存するテーブル
 class User(db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
-    # パスワードはそのまま保存せず、暗号化後の長い文字列（ハッシュ）が入るようにします
     password_hash = db.Column(db.String(200), nullable=False)
+    books = db.relationship("Book", backref="owner", lazy=True)
 
-    # ユーザーとタスクの紐付け（1対多のリレーションシップ）
-    # user.tasks と書くだけで、そのユーザーの全タスクを引き出せるようになります
-    tasks = db.relationship("TodoTask", backref="owner", lazy=True)
-
-
-# 2. タスク情報を保存するテーブル
-class TodoTask(db.Model):
-    __tablename__ = "tasks"
+# 2. 書籍情報を保存するテーブル
+class Book(db.Model):
+    __tablename__ = "books"
     id = db.Column(db.Integer, primary_key=True)
-    content = db.Column(db.String(200), nullable=False)
+    title = db.Column(db.String(200), nullable=False)
+    author = db.Column(db.String(200), nullable=False)
     is_completed = db.Column(db.Boolean, default=False, nullable=False)
-
-    # 【重要】誰のタスクかを記録する列。usersテーブルのidとリンクさせます（外部キー）
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-
 
 # ==================== ルーティング（各画面の処理） ====================
 
@@ -81,12 +71,9 @@ def login():
             # 合言葉が一致したら、セッション（サーバー側の記憶）にユーザーIDを保存
             session["user_id"] = user.id
             session["username"] = user.username
-            return redirect(url_for("todo_app"))
-
+            return redirect(url_for("list_app"))
         return "ユーザー名またはパスワードが間違っています", 401
-
     return render_template("login.html")
-
 
 # ログアウト処理
 @app.route("/logout")
@@ -94,86 +81,100 @@ def logout():
     session.clear()  # セッションの記憶をすべて消去してログアウト状態にする
     return redirect(url_for("login"))
 
+# ログイン必須のチェックを行うカスタムデコレータ
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if "user_id" not in session:
+            return redirect(url_for("login"))
+        return f(*args, **kwargs)
+    return decorated_function
 
-# メインのTodoリスト画面
+# メイン画面
 @app.route("/", methods=["GET", "POST"])
-def todo_app():
-    # 【ログインチェック】セッションにIDがなければ、ログイン画面へ強制送還
-    if "user_id" not in session:
-        return redirect(url_for("login"))
+@login_required
+def list_app():
+    keyword = request.args.get("keyword","")
 
+    if keyword:
+        search_query = f"%{keyword}%"
+        book_data = Book.query.filter(Book.user_id == session["user_id"], (Book.title.like(search_query) | Book.author.like(search_query))).all()
+    else:
+        book_data = Book.query.filter_by(user_id=session["user_id"]).all()
+    return render_template("books.html", books=book_data, username=session["username"])
+
+# 書籍追加ページを表示・処理するルート
+@app.route("/add", methods=["GET", "POST"])
+@login_required
+def add_book():
     if request.method == "POST":
-        task_text = request.form.get("task_content")
-        if task_text:
-            # 現在ログインしている人のID（session['user_id']）を紐付けてタスクを保存
-            new_task = TodoTask(content=task_text, user_id=session["user_id"])
-            db.session.add(new_task)
+        title = request.form.get("book_title")
+        author = request.form.get("author")
+        if title and author:
+            new_book = Book(title=title, author=author, user_id=session["user_id"])
+            db.session.add(new_book)
             db.session.commit()
-        return redirect(url_for("todo_app"))
-
-    # 【重要】すべてのタスクではなく、「現在ログイン中のユーザーのタスク」だけを絞り込んで取得
-    tasks_data = TodoTask.query.filter_by(user_id=session["user_id"]).all()
-    return render_template("todo.html", tasks=tasks_data, username=session["username"])
-
+            return redirect(url_for("list_app"))
+        else:
+            return "書籍名と著者名の両方を入力してください", 400
+    return render_template("add_book.html")
 
 # 一括削除・単体削除・編集の処理（すべての関数でログインチェックが必要です）
-@app.route("/toggle/<int:task_id>", methods=["POST"])
-def toggle_task(task_id):
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-    task = TodoTask.query.get_or_404(task_id)
-    # 他人のタスクを操作できないようにガードをかける（セキュリティ対策）
-    if task.user_id != session["user_id"]:
+@app.route("/toggle/<int:book_id>", methods=["POST"])
+@login_required
+def toggle_books(book_id):
+    book = Book.query.get_or_404(book_id)
+    # 他人のリストを操作できないようにガードをかける（セキュリティ対策）
+    if book.user_id != session["user_id"]:
         return "権限がありません", 403
 
-    task.is_completed = not task.is_completed
+    book.is_completed = not book.is_completed
     db.session.commit()
-    return redirect(url_for("todo_app"))
+    return redirect(url_for("list_app"))
 
 
-@app.route("/delete/<int:task_id>", methods=["POST"])
-def delete_task(task_id):
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-    task = TodoTask.query.get_or_404(task_id)
-    if task.user_id != session["user_id"]:
+@app.route("/delete/<int:book_id>", methods=["POST"])
+@login_required
+def delete_book(book_id):
+    book = Book.query.get_or_404(book_id)
+    if book.user_id != session["user_id"]:
         return "権限がありません", 403
 
-    db.session.delete(task)
+    db.session.delete(book)
     db.session.commit()
-    return redirect(url_for("todo_app"))
+    return redirect(url_for("list_app"))
 
 
 @app.route("/delete_completed", methods=["POST"])
-def delete_completed_tasks():
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-    # 自分のタスク、かつ完了済みのものだけを一括抽出
-    completed_tasks = TodoTask.query.filter_by(
+@login_required
+def delete_completed_books():
+    # 自分の書籍、かつ読了済みのものだけを一括抽出
+    completed_books = Book.query.filter_by(
         user_id=session["user_id"], is_completed=True
     ).all()
-    for task in completed_tasks:
-        db.session.delete(task)
+    for book in completed_books:
+        db.session.delete(book)
     db.session.commit()
-    return redirect(url_for("todo_app"))
+    return redirect(url_for("list_app"))
 
 
-@app.route("/edit/<int:task_id>", methods=["GET", "POST"])
-def edit_task(task_id):
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-    task = TodoTask.query.get_or_404(task_id)
-    if task.user_id != session["user_id"]:
+@app.route("/edit/<int:book_id>", methods=["GET", "POST"])
+@login_required
+def edit_books(book_id):
+    book = Book.query.get_or_404(book_id)
+    if book.user_id != session["user_id"]:
         return "権限がありません", 403
 
     if request.method == "POST":
-        new_text = request.form.get("updated_content")
-        if new_text:
-            task.content = new_text
-            db.session.commit()
-        return redirect(url_for("todo_app"))
-    return render_template("edit.html", current_task=task.content, task_id=task_id)
-
+        new_title = request.form.get("updated_title")
+        new_author = request.form.get("updated_author")
+        if new_title:
+            book.title = new_title
+        if new_author:
+            book.author = new_author
+        db.session.commit()
+        return redirect(url_for("list_app"))
+    return render_template("edit.html", current_book=book.title, current_author=book.author, book_id=book_id)
 
 if __name__ == "__main__":
     with app.app_context():

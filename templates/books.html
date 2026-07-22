@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}書籍リスト{% endblock %}
+
+{% block content %}
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <span style="font-weight: bold; color: #7f8c8d;">こんにちは、{{ username }} さん</span>
+        <a href="{{ url_for('logout') }}" style="color: #e74c3c; text-decoration: none; font-size: 14px; font-weight: bold;">[ログアウト]</a>
+    </div>
+    <h1>書籍リスト</h1>
+    <div style="margin-bottom: 20px;">
+        <a href="{{ url_for('add_book') }}" class="btn-add" style="width: 100%; padding: 10px; margin-bottom: 30px; font-size: 14px; font-weight: bold;">新しい書籍を追加</a>
+        <form action="{{ url_for('list_app') }}" method="GET" style="margin-bottom: 20px; display: flex; gap: 10px;">
+            <input type="text" name="keyword" value="{{ keyword }}" placeholder="タイトルや著者名で検索..." style="flex: 1; padding: 8px; border: 1px solid #cfd8dc; border-radius: 4px; font-size: 14px; font-weight: bold; margin-top: 30px">
+            <button type="submit" style="padding: 8px 16px; background-color: #3498db; color: white; border: none; border-radius: 4px; font-size: 14px; font-weight: bold;  margin-top: 30px;cursor: pointer;">検索</button>
+            {% if keyword %}
+                <a href="{{ url_for('list_app') }}" style="padding: 8px 12px; background-color: #95a5a6; color: white; text-decoration: none; border-radius: 4px; display: flex; align-items: center;">クリア</a>
+            {% endif %}
+        </form>
+    </div>
+    <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+        <thead>
+            <tr>
+                <th style="padding: 10px;">書籍名</th>
+                <th style="padding: 10px;">著者</th>
+                <th style="padding: 10px;">状態</th>
+                <th style="padding: 10px;">操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for book in books %}
+            <tr style="border-bottom: 1px solid #f1f1f1;">
+                <td style="padding: 10px;">{{ book.title }}</td>
+                <td style="padding: 10px;">{{ book.author }}</td>
+            <td style="padding: 10px;">
+                <span class="book-status {% if book.is_completed %}completed{% endif %}" style="padding: 10px;">
+                    {% if book.is_completed %}読了{% else %}未読{% endif %}
+                </span>
+            </td>
+            <td style="padding: 10px; text-align: center;">
+                    <div style="display: flex; gap: 5px; justify-content: center;">
+                        <form action="{{ url_for('toggle_books', book_id=book.id) }}" method="POST" style="display:inline;">
+                            <button type="submit" class="btn-toggle">
+                                {% if book.is_completed %}戻す{% else %}完了{% endif %}
+                            </button>
+                        </form>
+                    <a href="{{ url_for('edit_books', book_id=book.id) }}" class="btn-edit">編集</a>
+                    <form action="{{ url_for('delete_book', book_id=book.id) }}" method="POST">
+                        <button type="submit" class="btn-delete">削除</button>
+                    </form> 
+                </div>
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="4" style="padding: 20px; text-align: center; color: #95a5a6;">書籍がありません。</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <div style="margin-top: 20px; text-align: right;">
+            <form action="{{ url_for('delete_completed_books') }}" method="POST">
+                <button type="submit" class="btn-clear" 
+                        {% if books|selectattr('is_completed', 'equalto', true)|list|length == 0 %}disabled{% endif %}>
+                    完了済み書籍を全て削除
+                </button>
+            </form>
+        </div>
+{% endblock %}
