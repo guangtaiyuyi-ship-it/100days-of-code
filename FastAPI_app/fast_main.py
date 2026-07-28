@@ -1,22 +1,32 @@
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Depends
 from pydantic import BaseModel
+from sqlalchemy import Column, Integer, String, Float
+from sqlalchemy.orm import Session
+from database import engine, Base, get_db
 
-# リクエストデータの定義
-class Item(BaseModel):
+app = FastAPI()
+
+class ItemModel(Base):
+    __tablename__ = "items"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, index=True)
+    description = Column(String, nullable=True)
+    price = Column(Float)
+    tax = Column(Float, nullable=True)
+
+Base.metadata.create_all(bind=engine)
+
+class ItemCreate(BaseModel):
     name: str
-    description: str| None = None
+    description: str | None = None
     price: float
     tax: float | None = None
 
-# レスポンスデータの定義
 class ItemResponse(BaseModel):
     name: str
     price: float
     total: float
-
-app = FastAPI()
-
-items = {1: "りんご", 2: "みかん", 3: "バナナ"}
 
 @app.get("/")
 def read_root():
@@ -24,13 +34,17 @@ def read_root():
 
 @app.get("/items/{item_id}")
 def read_item(item_id: int):
+    items = {1: "りんご", 2: "みかん", 3: "バナナ"}
     if item_id not in items:
         raise HTTPException(status_code=404, detail="Item not found")
     return {"item_id": item_id, "name": items[item_id]}
 
+
 @app.get("/items/")
-def read_items(skip: int = 0, limit: int = 10):
-    return {"skip": skip, "limit": limit}
+def get_items(db: Session = Depends(get_db)):
+    # データベースからすべてのアイテムを取得
+    items = db.query(ItemModel).all()
+    return items
 
 @app.get("/search/")
 def search_items(
@@ -39,16 +53,17 @@ def search_items(
 ):
     return {"query": q, "count": count}
 
-@app.post("/items/")
-def create_item(item: Item):
-    return {"item": item, "total": item.price + (item.tax or 0)}
-
-@app.post("/items/", response_model=ItemResponse)
-def create_item(item: Item):
-    total = item.price + (item.tax or 0)
-    return {"name": item.name, "price": item.price, "total": total}
 
 @app.post("/items/")
-def create_item(item: Item):
-    total = item.price + (item.tax or 0)
-    return {"message": "作成しました", "item": item, "total": total}
+def create_item(item: ItemCreate, db: Session = Depends(get_db)):
+    # 1. PydanticモデルからSQLAlchemyのモデル（DB用データ）に変換
+    db_item = ItemModel(
+        name=item.name, description=item.description, price=item.price, tax=item.tax
+    )
+
+    # 2. データベースに保存
+    db.add(db_item)
+    db.commit()
+    db.refresh(db_item)
+
+    return {"message": "作成しました", "item": db_item}

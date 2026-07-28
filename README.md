@@ -6,6 +6,9 @@ PythonでのWeb開発の基本を身につけるため、Flask,FastAPIを使用�
 
 ## 📅 開発ログ
 
+## 17日目(7月29日)
+- SQLAlchemyを用いたSQLiteデータベース（test.db）との接続とセッション管理（Depends(get_db)）の構築
+- **所感**: エラーとの戦いが大半を占めたが何とか実装できた。flaskとは違ったdb実装だったので、flaskがいかに簡単に実装できていたのかを通関した。
 ### 16日目 (7月28日)
 - FastAPI特有のPydanticモデルの仕組みを理解
 - データが見つからない場合の意図したステータスコード（HTTPException）の把握
